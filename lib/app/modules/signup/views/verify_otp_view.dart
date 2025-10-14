@@ -9,12 +9,23 @@ import '../../../../common/app_text_style/styles.dart';
 import '../../../../common/size_box/custom_sizebox.dart';
 
 class VerifyOtpView extends StatelessWidget {
-  VerifyOtpView({super.key});
+  final String otp;
+  final String email;
+
+  VerifyOtpView({super.key, required this.otp, required this.email});
 
   final controller = Get.put(SignupController());
 
   @override
   Widget build(BuildContext context) {
+    if (otp.isNotEmpty && otp.length == 6) {
+      Future.microtask(() {
+        for (int i = 0; i < 6; i++) {
+          controller.controllers[i].text = otp[i];
+        }
+        controller.otp.value = otp;
+      });
+    }
     return Scaffold(
       backgroundColor: AppColors.white,
       body: Padding(
@@ -32,8 +43,8 @@ class VerifyOtpView extends StatelessWidget {
             sh150,
             Text('Verify Your Email', style: h2.copyWith(fontSize: 20)),
             sh8,
-            const Text(
-              "OTP sent to criby123******@gmail.com",
+            Text(
+              "OTP sent to $email",
               textAlign: TextAlign.center,
             ),
             sh24,
@@ -67,15 +78,32 @@ class VerifyOtpView extends StatelessWidget {
               }),
             ),
             sh40,
-            CustomButton(
-              text: 'Verify',
-              onPressed: () {},
-              backgroundColor: AppColors.blueLight,
+            Obx( ()=> CustomButton(
+                text: 'Verify',
+                onPressed:  controller.isLoading.value
+                    ? (){}
+                    : () async {
+                  String enteredOtp = controller.otp.value;
+
+                  if (enteredOtp.length != 6) {
+                    Get.snackbar('Error', 'Please enter a valid 6-digit OTP');
+                    return;
+                  }
+
+                  await controller.otpVerify(
+                    email: email,
+                    otp: enteredOtp,
+                  );
+                },
+                backgroundColor: AppColors.blueLight,
+              ),
             ),
             sh16,
             CustomButton(
               text: 'Resend OTP',
-              onPressed: () {},
+              onPressed: () {
+                controller.resendOtp(email: email);
+              },
               backgroundColor: AppColors.silver,
               textColor: AppColors.black,
             ),

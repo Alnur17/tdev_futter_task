@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:tdev_futter_task/app/modules/login/views/login_view.dart';
-import 'package:tdev_futter_task/app/modules/signup/views/verify_otp_view.dart';
 
 import '../../../../common/app_color/app_colors.dart';
 import '../../../../common/app_images/app_images.dart';
@@ -12,17 +11,13 @@ import '../../../../common/widgets/custom_button.dart';
 import '../../../../common/widgets/custom_textfield.dart';
 import '../controllers/signup_controller.dart';
 
-class SignupView extends GetView<SignupController> {
-  const SignupView({super.key});
+class SignupView extends StatelessWidget {
+  SignupView({super.key});
+
+  final signupController = Get.put(SignupController());
 
   @override
   Widget build(BuildContext context) {
-    final emailTEController = TextEditingController();
-    final phoneTEController = TextEditingController();
-    final nameTEController = TextEditingController();
-    final passwordTEController = TextEditingController();
-    final confirmPasswordTEController = TextEditingController();
-
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
@@ -46,7 +41,7 @@ class SignupView extends GetView<SignupController> {
                 ),
                 sh16,
                 CustomTextField(
-                  controller: nameTEController,
+                  controller: signupController.nameTEController,
                   hintText: 'Full Name',
                   preIcon: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -58,7 +53,7 @@ class SignupView extends GetView<SignupController> {
                 ),
                 sh16,
                 CustomTextField(
-                  controller: phoneTEController,
+                  controller: signupController.phoneTEController,
                   hintText: 'Phone No',
                   preIcon: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -70,7 +65,7 @@ class SignupView extends GetView<SignupController> {
                 ),
                 sh16,
                 CustomTextField(
-                  controller: emailTEController,
+                  controller: signupController.emailTEController,
                   hintText: 'qxpay@gamil.com',
                   preIcon: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -82,7 +77,7 @@ class SignupView extends GetView<SignupController> {
                 ),
                 sh16,
                 CustomTextField(
-                  controller: passwordTEController,
+                  controller: signupController.passwordTEController,
                   hintText: 'Password',
                   preIcon: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -94,7 +89,7 @@ class SignupView extends GetView<SignupController> {
                 ),
                 sh16,
                 CustomTextField(
-                  controller: confirmPasswordTEController,
+                  controller: signupController.confirmPassTEController,
                   hintText: 'Confirm Password',
                   obscureText: true,
                   preIcon: Padding(
@@ -104,16 +99,12 @@ class SignupView extends GetView<SignupController> {
                       scale: 4,
                     ),
                   ),
-                  sufIcon: Image.asset(
-                    AppImages.eye,
-                    scale: 4,
-                  ),
                 ),
                 sh24,
                 CustomButton(
                   text: 'Next',
                   onPressed: () {
-                    Get.offAll(()=> VerifyOtpView());
+                    signupController.registerUser();
                   },
                   backgroundColor: AppColors.blueLight,
                 ),
