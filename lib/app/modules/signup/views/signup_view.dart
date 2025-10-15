@@ -91,7 +91,6 @@ class SignupView extends StatelessWidget {
                 CustomTextField(
                   controller: signupController.confirmPassTEController,
                   hintText: 'Confirm Password',
-                  obscureText: true,
                   preIcon: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Image.asset(
