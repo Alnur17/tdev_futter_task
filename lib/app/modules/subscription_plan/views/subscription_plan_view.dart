@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-import 'package:tdev_futter_task/app/modules/subscription_plan/views/payment_success_view.dart';
-import 'package:tdev_futter_task/common/app_images/app_images.dart';
-import 'package:tdev_futter_task/common/widgets/custom_button.dart';
-
 import '../../../../common/app_color/app_colors.dart';
 import '../../../../common/app_text_style/styles.dart';
 import '../../../../common/size_box/custom_sizebox.dart';
+import '../../../../common/widgets/custom_button.dart';
 import '../controllers/subscription_plan_controller.dart';
+import '../../../../common/app_images/app_images.dart';
 
 class SubscriptionPlanView extends StatelessWidget {
   SubscriptionPlanView({super.key});
@@ -22,90 +19,117 @@ class SubscriptionPlanView extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              sh16,
-              Text(
-                'Pricing',
-                style: h2,
-              ),
-              sh5,
-              Text(
-                'Get unlimited access to all features',
-                style: h4.copyWith(color: AppColors.grey),
-              ),
-              sh24,
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.silver,
-                  borderRadius: BorderRadius.circular(12),
+          child: Obx(() {
+            if (controller.isLoading.value) {
+              return const Center(child: CircularProgressIndicator(color: AppColors.blueLight,));
+            }
+
+            if (controller.plans.isEmpty) {
+              return const Center(child: Text('No subscription plans found.'));
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                sh16,
+                Text('Pricing', style: h2),
+                sh5,
+                Text(
+                  'Get unlimited access to all features',
+                  style: h4.copyWith(color: AppColors.grey),
                 ),
-                child: Obx(
-                  () => Column(
-                    children: [
-                      _buildPlanTile(
-                        index: 0,
-                        title: 'Gold Plan',
-                        price: '\$10.99 / month',
-                      ),
-                      Divider(),
-                      _buildPlanTile(
-                        index: 1,
-                        title: 'Diamond Plan',
-                        price: '\$100.99 / month',
-                        tag: 'Most Popular',
-                      ),
-                      Divider(),
-                      _buildPlanTile(
-                        index: 2,
-                        title: 'Basic Plan',
-                        price: '\$4.99 / month',
-                      ),
-                    ],
+                sh24,
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.silver,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: List.generate(controller.plans.length, (index) {
+                      final plan = controller.plans[index];
+                      return Column(
+                        children: [
+                          _buildPlanTile(
+                            index: index,
+                            title: plan.name ?? 'Unnamed Plan',
+                            price:
+                                '\$${plan.price ?? 0} / ${plan.durationDays ?? 0} days',
+                            tag: index == 0 ? 'Most Popular' : null,
+                          ),
+                          if (index != controller.plans.length - 1)
+                            const Divider(height: 1),
+                        ],
+                      );
+                    }),
                   ),
                 ),
-              ),
+                sh24,
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Details',
+                      style: h3.copyWith(color: AppColors.grey)),
+                ),
+                sh8,
+                Obx(() {
+                  final selected = controller.selectedPlanDetails.value;
+                  if (selected == null) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.silver,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text('Please select a plan',
+                            style: h4.copyWith(color: AppColors.grey)),
+                      ),
+                    );
+                  }
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.silver,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildDetailRow('Plan Name:', selected.name ?? ''),
+                        sh8,
+                        _buildDetailRow(
+                            'Duration:', '${selected.durationDays ?? 0} Days'),
+                        sh8,
+                        _buildDetailRow('Amount:', '\$${selected.price ?? 0}'),
+                        sh8,
+                        _buildDetailRow('Charge:', '\$${selected.charge ?? 0}'),
+                      ],
+                    ),
+                  );
+                }),
+                sh20,
+                CustomButton(
+                  text: 'Pay Now',
+                  onPressed: () {
+                    if (controller.selectedPlan.value == -1) {
+                      Get.snackbar('Warning', 'Please select a plan first');
+                      return;
+                    }
 
-              sh24,
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Details',
-                  style: h3.copyWith(color: AppColors.grey),
+                    final selectedPlan = controller.selectedPlanDetails.value;
+                    if (selectedPlan != null && selectedPlan.id != null) {
+                      controller.createPaymentSession(
+                          planId: selectedPlan.id.toString());
+                    } else {
+                      Get.snackbar('Error', 'Invalid plan selected');
+                    }
+                  },
+                  backgroundColor: AppColors.blueLight,
+                  textColor: AppColors.white,
                 ),
-              ),
-              sh8,
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.silver,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    _buildDetailRow('Plan Name:', 'Premium'),
-                    sh8,
-                    _buildDetailRow('Duration:', '1 Month'),
-                    sh8,
-                    _buildDetailRow('Amount:', '\$29.99'),
-                    sh8,
-                    _buildDetailRow('Charge:', '\$10'),
-                  ],
-                ),
-              ),
-              sh20,
-              CustomButton(
-                text: 'Pay Now',
-                onPressed: () {
-                  Get.to(()=> PaymentSuccessView());
-                },
-                backgroundColor: AppColors.blueLight,
-                textColor: AppColors.white,
-              ),
-            ],
-          ),
+              ],
+            );
+          }),
         ),
       ),
     );
@@ -117,6 +141,7 @@ class SubscriptionPlanView extends StatelessWidget {
     required String price,
     String? tag,
   }) {
+    final controller = Get.find<SubscriptionPlanController>();
     final isSelected = controller.selectedPlan.value == index;
 
     return GestureDetector(
@@ -129,21 +154,15 @@ class SubscriptionPlanView extends StatelessWidget {
               isSelected ? AppImages.checkBoxFilled : AppImages.checkBox,
               scale: 4,
             ),
-            const SizedBox(width: 10),
+            sw8,
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: h3,
-                ),
-                Text(
-                  price,
-                  style: h4.copyWith(color: AppColors.grey),
-                ),
+                Text(title, style: h3),
+                Text(price, style: h4.copyWith(color: AppColors.grey)),
               ],
             ),
-            Spacer(),
+            const Spacer(),
             if (tag != null)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -151,9 +170,7 @@ class SubscriptionPlanView extends StatelessWidget {
                   color: Colors.purpleAccent,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  'Most Popular',
-                  style: h6.copyWith(color: AppColors.white)),
+                child: Text(tag, style: h6.copyWith(color: AppColors.white)),
               ),
           ],
         ),

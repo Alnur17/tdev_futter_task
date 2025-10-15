@@ -14,7 +14,7 @@ class VerifyOtpView extends StatelessWidget {
 
   VerifyOtpView({super.key, required this.otp, required this.email});
 
-  final controller = Get.put(SignupController());
+  final SignupController controller = Get.find();
 
   @override
   Widget build(BuildContext context) {
